@@ -59,35 +59,36 @@ export default function App() {
     console.log(`[Generate] Prompt: "${fullPrompt}"`);
     console.log(`[Generate] Auth status: ${apiKey ? 'Logged In (BYOP)' : 'Anonymous (Free)'}`);
     
-    if (apiKey) {
-      try {
-        const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
-        console.log(`[Generate] Fetching URL (Auth): ${url}`);
-        
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${apiKey}` } });
-        console.log(`[Generate] Response status: ${response.status} ${response.statusText}`);
-        
-        if (!response.ok) {
-          const errorText = await response.text().catch(() => 'No text');
-          console.error(`[Generate] API Error Body:`, errorText);
-          throw new Error(`Generation failed: ${response.status}`);
-        }
-        
-        console.log(`[Generate] Processing blob...`);
-        const blob = await response.blob();
-        console.log(`[Generate] Blob size: ${blob.size} bytes`);
-        setImageUrl(window.URL.createObjectURL(blob));
-        console.log(`[Generate] Image URL set successfully.`);
-      } catch (error) {
-        console.error('[Generate] Exception caught:', error);
-        alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}. Check console for details.`);
-      } finally {
-        setIsGenerating(false);
-      }
-    } else {
+    try {
       const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
-      console.log(`[Generate] Setting image URL (Free): ${url}`);
-      setImageUrl(url);
+      console.log(`[Generate] Fetching URL: ${url}`);
+      
+      const headers: HeadersInit = {};
+      if (apiKey) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+        console.log(`[Generate] Using Auth Header.`);
+      } else {
+        console.log(`[Generate] Using Anonymous access.`);
+      }
+      
+      const response = await fetch(url, { headers });
+      console.log(`[Generate] Response received. Status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => 'No error body');
+        console.error(`[Generate] API Error (${response.status}):`, errorBody);
+        throw new Error(`API returned ${response.status}: ${response.statusText}`);
+      }
+      
+      console.log(`[Generate] Reading blob...`);
+      const blob = await response.blob();
+      console.log(`[Generate] Success! Blob size: ${blob.size} bytes`);
+      setImageUrl(window.URL.createObjectURL(blob));
+    } catch (error) {
+      console.error('[Generate] Critical Error:', error);
+      alert(`Errore nella generazione: ${error instanceof Error ? error.message : 'Errore sconosciuto'}. Controlla la console (F12) per i dettagli.`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
