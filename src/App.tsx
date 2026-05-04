@@ -55,34 +55,20 @@ export default function App() {
     const fullPrompt = `${prompt.trim()}${selectedStyle.prompt}`;
     const seed = Math.floor(Math.random() * 1000000);
     
-    console.log(`[Generate] Starting generation...`);
-    console.log(`[Generate] Prompt: "${fullPrompt}"`);
-    console.log(`[Generate] Auth status: ${apiKey ? 'Logged In (BYOP)' : 'Anonymous (Free)'}`);
-    
     try {
       const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
-      console.log(`[Generate] Fetching URL: ${url}`);
-      
       const response = await fetch(url, { 
         headers: {
           'Authorization': `Bearer ${apiKey}`
         } 
       });
-      console.log(`[Generate] Response received. Status: ${response.status} ${response.statusText}`);
       
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => 'No error body');
-        console.error(`[Generate] API Error (${response.status}):`, errorBody);
-        throw new Error(`API returned ${response.status}: ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`API returned ${response.status}`);
       
-      console.log(`[Generate] Reading blob...`);
       const blob = await response.blob();
-      console.log(`[Generate] Success! Blob size: ${blob.size} bytes`);
       setImageUrl(window.URL.createObjectURL(blob));
     } catch (error) {
-      console.error('[Generate] Critical Error:', error);
-      alert(`Errore nella generazione: ${error instanceof Error ? error.message : 'Errore sconosciuto'}. Assicurati di avere ancora "pollen" nel tuo account.`);
+      alert(`Errore nella generazione. Assicurati di avere ancora "pollen" nel tuo account.`);
     } finally {
       setIsGenerating(false);
     }
