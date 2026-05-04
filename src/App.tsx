@@ -63,15 +63,11 @@ export default function App() {
       const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
       console.log(`[Generate] Fetching URL: ${url}`);
       
-      const headers: HeadersInit = {};
-      if (apiKey) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-        console.log(`[Generate] Using Auth Header.`);
-      } else {
-        console.log(`[Generate] Using Anonymous access.`);
-      }
-      
-      const response = await fetch(url, { headers });
+      const response = await fetch(url, { 
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        } 
+      });
       console.log(`[Generate] Response received. Status: ${response.status} ${response.statusText}`);
       
       if (!response.ok) {
@@ -86,7 +82,7 @@ export default function App() {
       setImageUrl(window.URL.createObjectURL(blob));
     } catch (error) {
       console.error('[Generate] Critical Error:', error);
-      alert(`Errore nella generazione: ${error instanceof Error ? error.message : 'Errore sconosciuto'}. Controlla la console (F12) per i dettagli.`);
+      alert(`Errore nella generazione: ${error instanceof Error ? error.message : 'Errore sconosciuto'}. Assicurati di avere ancora "pollen" nel tuo account.`);
     } finally {
       setIsGenerating(false);
     }
@@ -179,13 +175,24 @@ export default function App() {
                   className="w-full bg-transparent px-4 py-3 focus:outline-none text-gray-100 placeholder-gray-600 font-medium"
                   disabled={isGenerating}
                 />
-                <button
-                  type="submit"
-                  disabled={!prompt.trim() || isGenerating}
-                  className="px-6 py-3 bg-white text-black rounded-xl font-bold hover:bg-gray-200 disabled:opacity-50 transition-all flex items-center gap-2"
-                >
-                  {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Generate'}
-                </button>
+                {apiKey ? (
+                  <button
+                    type="submit"
+                    disabled={!prompt.trim() || isGenerating}
+                    className="px-6 py-3 bg-white text-black rounded-xl font-bold hover:bg-gray-200 disabled:opacity-50 transition-all flex items-center gap-2"
+                  >
+                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Generate'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleLogin}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold hover:opacity-90 transition-all flex items-center gap-2"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Login to Create
+                  </button>
+                )}
               </div>
             </div>
 
