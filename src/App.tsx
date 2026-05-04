@@ -61,7 +61,7 @@ export default function App() {
     
     if (apiKey) {
       try {
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
+        const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
         console.log(`[Generate] Fetching URL (Auth): ${url}`);
         
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${apiKey}` } });
@@ -85,7 +85,7 @@ export default function App() {
         setIsGenerating(false);
       }
     } else {
-      const url = `https://pollinations.ai/p/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
+      const url = `https://gen.pollinations.ai/image/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
       console.log(`[Generate] Setting image URL (Free): ${url}`);
       setImageUrl(url);
     }
