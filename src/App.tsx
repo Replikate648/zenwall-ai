@@ -55,21 +55,38 @@ export default function App() {
     const fullPrompt = `${prompt.trim()}${selectedStyle.prompt}`;
     const seed = Math.floor(Math.random() * 1000000);
     
+    console.log(`[Generate] Starting generation...`);
+    console.log(`[Generate] Prompt: "${fullPrompt}"`);
+    console.log(`[Generate] Auth status: ${apiKey ? 'Logged In (BYOP)' : 'Anonymous (Free)'}`);
+    
     if (apiKey) {
       try {
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
+        console.log(`[Generate] Fetching URL (Auth): ${url}`);
+        
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${apiKey}` } });
-        if (!response.ok) throw new Error('Generation failed');
+        console.log(`[Generate] Response status: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'No text');
+          console.error(`[Generate] API Error Body:`, errorText);
+          throw new Error(`Generation failed: ${response.status}`);
+        }
+        
+        console.log(`[Generate] Processing blob...`);
         const blob = await response.blob();
+        console.log(`[Generate] Blob size: ${blob.size} bytes`);
         setImageUrl(window.URL.createObjectURL(blob));
+        console.log(`[Generate] Image URL set successfully.`);
       } catch (error) {
-        console.error('Error generating image:', error);
-        alert('Failed to generate image. Check your Pollen balance.');
+        console.error('[Generate] Exception caught:', error);
+        alert(`Failed to generate image: ${error instanceof Error ? error.message : 'Unknown error'}. Check console for details.`);
       } finally {
         setIsGenerating(false);
       }
     } else {
       const url = `https://pollinations.ai/p/${encodeURIComponent(fullPrompt)}?width=1080&height=1920&model=flux&nologo=true&seed=${seed}`;
+      console.log(`[Generate] Setting image URL (Free): ${url}`);
       setImageUrl(url);
     }
   };
